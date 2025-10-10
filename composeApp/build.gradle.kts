@@ -32,6 +32,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.bundles.ktor)
             implementation(libs.jetbrains.compose.material.icons)
+            implementation(libs.jetbrains.navigation.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
