@@ -1,4 +1,4 @@
-package com.ardondev.contactsapp.contact_list
+package com.ardondev.contactsapp.feature.contacts
 
 import androidx.compose.runtime.Composable
 import kotlinx.serialization.Serializable

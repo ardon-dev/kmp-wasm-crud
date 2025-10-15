@@ -7,10 +7,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ardondev.contactsapp.contact_list.ContactListScreen
-import com.ardondev.contactsapp.contact_list.ContactsRoute
-import com.ardondev.contactsapp.login.LoginRoute
-import com.ardondev.contactsapp.login.LoginScreen
+import com.ardondev.contactsapp.feature.contacts.ContactListScreen
+import com.ardondev.contactsapp.feature.contacts.ContactsRoute
+import com.ardondev.contactsapp.feature.login.LoginRoute
+import com.ardondev.contactsapp.feature.login.LoginScreen
 
 @Composable
 fun App(
@@ -28,7 +28,9 @@ fun App(
             composable<LoginRoute> {
                 LoginScreen(
                     onLoginSuccess = {
-                        navController.navigate(ContactsRoute)
+                        navController.navigate(
+                            route = ContactsRoute
+                        )
                     }
                 )
             }

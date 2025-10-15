@@ -9,7 +9,7 @@ import androidx.navigation.bindToBrowserNavigation
 fun main() {
     ComposeViewport {
         App(
-            onNavHostReady = { it.bindToBrowserNavigation()}
+            onNavHostReady = {}
         )
     }
 }
