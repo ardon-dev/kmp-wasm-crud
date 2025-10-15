@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ardondev.contactsapp.core.Session
 import com.ardondev.contactsapp.feature.contacts.ContactListScreen
 import com.ardondev.contactsapp.feature.contacts.ContactsRoute
 import com.ardondev.contactsapp.feature.login.LoginRoute
@@ -17,13 +18,16 @@ fun App(
     onNavHostReady: suspend (NavController) -> Unit = {}
 ) {
 
+    val isAuthenticated = Session.fetchValue(Session.KEY_TOKEN) != null
+    println("Authenticated user: $isAuthenticated")
+
     MaterialTheme {
 
         val navController = rememberNavController()
 
         NavHost(
             navController = navController,
-            startDestination = LoginRoute
+            startDestination = if (isAuthenticated) ContactsRoute else LoginRoute
         ) {
             composable<LoginRoute> {
                 LoginScreen(

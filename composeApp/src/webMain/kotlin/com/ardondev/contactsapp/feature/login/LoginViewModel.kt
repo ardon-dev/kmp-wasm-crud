@@ -2,6 +2,7 @@ package com.ardondev.contactsapp.feature.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ardondev.contactsapp.core.Session
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,6 +62,7 @@ class LoginViewModel : ViewModel() {
                 password = uiState.value.password.trim()
             ).fold(
                 onSuccess = { response ->
+                    saveSession(response)
                     _uiState.value = uiState.value.copy(
                         loading = false,
                         error = null,
@@ -77,6 +79,11 @@ class LoginViewModel : ViewModel() {
             )
 
         }
+    }
+
+    private fun saveSession(response: LoginResponse) {
+        Session.saveValue(Session.KEY_TOKEN, response.accessToken.orEmpty())
+        Session.saveValue(Session.KEY_EXPIRES_AT, response.expiresAt.toString())
     }
 
 }
