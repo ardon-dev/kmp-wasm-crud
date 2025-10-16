@@ -249,19 +249,22 @@ fun <T : RowData> DynamicDataTable(
             else {
                 items(viewModel.visibleData.value) { rowData ->
                     DataRow(rowData, columnDefs)
-                    HorizontalDivider()
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
                 }
             }
 
             // Espacio en blanco para las filas restantes
-            val visibleCount = viewModel.visibleData.value.size
-            val remainingRows = viewModel.pageSize - visibleCount
-            if (remainingRows > 0) {
-                items(remainingRows) {
-                    Spacer(Modifier.height(40.dp))
-                    HorizontalDivider(color = Color.Transparent)
-                }
-            }
+//            val visibleCount = viewModel.visibleData.value.size
+//            val remainingRows = viewModel.pageSize - visibleCount
+//            if (remainingRows > 0) {
+//                items(remainingRows) {
+//                    Spacer(Modifier.height(40.dp))
+//                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+//                }
+//            }
         }
 
         // 1.4 :: PAGINACIÓN
@@ -362,6 +365,7 @@ fun DataTableHeader(
             leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = "Buscar") },
             textStyle = MaterialTheme.typography.bodyMedium,
             colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                 errorIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
@@ -440,7 +444,6 @@ private fun <T : RowData> DataRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
     ) {
         columnDefs.forEach { col ->
             val cellValue = col.accessor(rowData).toString()
@@ -449,6 +452,7 @@ private fun <T : RowData> DataRow(
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .weight(col.widthWeight)
+                    .padding(16.dp)
             )
         }
     }
