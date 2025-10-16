@@ -1,6 +1,7 @@
 package com.ardondev.contactsapp.feature.login
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -34,9 +35,17 @@ fun LoginScreen(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
 
-        Card {
+        Card(
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 4.dp
+            ),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -58,7 +67,8 @@ fun LoginScreen(
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = "Inicio de sesión", style = MaterialTheme.typography.headlineMedium
+                    text = "Inicio de sesión",
+                    style = MaterialTheme.typography.headlineMedium
                 )
 
                 Spacer(Modifier.height(24.dp))
@@ -74,7 +84,7 @@ fun LoginScreen(
                     supportingText = uiState.emailError
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(16.dp))
 
                 CustomTextField(
                     value = uiState.password,
