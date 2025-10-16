@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,15 +46,25 @@ data class ColumnDef<T : RowData>(
 /**
  * ViewModel para [DynamicDataTable]. Gestiona los datos de la tabla.
  *
- * @param allData Listado de los datos.
+ * @param initialData Listado inicial de los datos.
  * @param columnDefs Listado de [ColumnDef].
  * @param pageSize Número de filas por página.
  */
 class DataTableViewModel<T : RowData>(
-    private val allData: List<T>,
+    private val initialData: List<T>,
     private val columnDefs: List<ColumnDef<T>>,
     val pageSize: Int = 10
 ) {
+
+    private var _allData by mutableStateOf(initialData)
+    val allData: List<T> get() = _allData
+
+    // Para actualizar los datos desde el composable
+    fun updateData(newData: List<T>) {
+        if (_allData != newData) {
+            _allData = newData
+        }
+    }
 
     // Valor de búsqueda por texto
     var searchText by mutableStateOf("")
@@ -165,10 +176,18 @@ fun <T : RowData> DynamicDataTable(
     modifier: Modifier = Modifier,
     onFilterClick: (() -> Unit)? = null,
     onRefreshClick: (() -> Unit)? = null,
-    onAddClick: (() -> Unit)? = null
+    onAddClick: (() -> Unit)? = null,
+    isLoading: Boolean = false,
+    error: String? = null
 ) {
     // Inicializar ViewModel
     val viewModel = remember { DataTableViewModel(data, columnDefs) }
+
+    LaunchedEffect(data) {
+        viewModel.updateData(data)
+    }
+
+    val alpha = if (isLoading) 0.5f else 1f
 
     // 1 :: CONTENEDOR
     Column(
@@ -179,27 +198,34 @@ fun <T : RowData> DynamicDataTable(
 
         // 1.1 :: CABECERA
         DataTableHeader(
+            isLoading = isLoading,
             searchText = viewModel.searchText,
             onSearchTextChange = viewModel::updateSearchText,
             actions = {
                 onFilterClick?.let {
                     DataTableAction(
                         icon = Icons.Filled.FilterList,
+                        enabled = !isLoading,
                         small = true,
-                        onClick = it
+                        onClick = it,
+                        modifier = Modifier.alpha(alpha)
                     )
                 }
                 onRefreshClick?.let {
                     DataTableAction(
                         icon = Icons.Filled.Sync,
+                        enabled = !isLoading,
                         small = true,
-                        onClick = it
+                        onClick = it,
+                        modifier = Modifier.alpha(alpha)
                     )
                 }
                 onAddClick?.let {
                     DataTableAction(
                         icon = Icons.Filled.Add,
-                        onClick = it
+                        enabled = !isLoading,
+                        onClick = it,
+                        modifier = Modifier.alpha(alpha)
                     )
                 }
             }
@@ -231,6 +257,7 @@ fun <T : RowData> DynamicDataTable(
                 .fillMaxSize()
                 .weight(1f)
                 .background(MaterialTheme.colorScheme.surface)
+                .alpha(alpha)
         ) {
             // Si se está filtrando por texto y no hay resultados se muestra mensaje
             if (viewModel.visibleData.value.isEmpty() && viewModel.searchText.isNotBlank()) {
@@ -267,6 +294,10 @@ fun <T : RowData> DynamicDataTable(
 //            }
         }
 
+        if (isLoading) {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+        }
+
         // 1.4 :: PAGINACIÓN
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -280,17 +311,35 @@ fun <T : RowData> DynamicDataTable(
             val endItem = (startItem + viewModel.visibleData.value.size - 1).coerceAtMost(totalItems)
 
             // Estado de la paginación
-            Text(
-                text = if (totalItems > 0) {
-                    "Mostrando $startItem - $endItem de $totalItems resultados."
-                } else {
-                    "No hay resultados."
-                },
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-            )
+            if (error != null) {
+                Text(
+                    text = error,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+            } else if (isLoading) {
+                Text(
+                    text = "Loading...",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+            } else {
+                Text(
+                    text = if (totalItems > 0) {
+                        "Mostrando $startItem - $endItem de $totalItems resultados."
+                    } else {
+                        "No hay resultados."
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                )
+            }
 
             // Botones de paginación
             Row(
@@ -347,7 +396,8 @@ fun <T : RowData> DynamicDataTable(
 fun DataTableHeader(
     searchText: String,
     onSearchTextChange: (String) -> Unit,
-    actions: @Composable (RowScope.() -> Unit)
+    actions: @Composable (RowScope.() -> Unit),
+    isLoading: Boolean = false,
 ) {
 
     Row(
@@ -357,6 +407,7 @@ fun DataTableHeader(
 
         // Entrada de texto de búsqueda
         TextField(
+            enabled = !isLoading,
             value = searchText,
             onValueChange = onSearchTextChange,
             singleLine = true,
@@ -397,6 +448,8 @@ fun DataTableHeader(
 @Composable
 fun DataTableAction(
     icon: ImageVector,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = false,
     small: Boolean = false,
     onClick: () -> Unit = {}
 ) {
@@ -405,8 +458,11 @@ fun DataTableAction(
             onClick = onClick,
             elevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 0.dp,
-                focusedElevation = 0.dp
-            )
+                focusedElevation = 0.dp,
+                hoveredElevation = if (enabled) 4.dp else 0.dp,
+                pressedElevation = if (enabled) 12.dp else 0.dp
+            ),
+            modifier = modifier
         ) {
             Icon(
                 imageVector = icon,
@@ -418,8 +474,11 @@ fun DataTableAction(
             onClick = onClick,
             elevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 0.dp,
-                focusedElevation = 0.dp
-            )
+                focusedElevation = 0.dp,
+                pressedElevation = if (enabled) 12.dp else 0.dp
+            ),
+
+            modifier = modifier
         ) {
             Icon(
                 imageVector = icon,
