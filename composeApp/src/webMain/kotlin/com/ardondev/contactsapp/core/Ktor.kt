@@ -30,6 +30,8 @@ object KtorClient {
         @SerialName("code"      ) var code      : Int?    = null,
         @SerialName("error_code") var errorCode : String? = null,
         @SerialName("msg"       ) var msg       : String? = null,
+        @SerialName("message"   ) var message   : String? = null,
+        @SerialName("hint"      ) var hint      : String? = null
     )
 
 }
