@@ -18,11 +18,12 @@ class ContactListViewModel: ViewModel() {
     val uiState: StateFlow<ContactListUiState> = _uiState.asStateFlow()
 
     fun getContacts() {
+        if (uiState.value.loading) return
+
         viewModelScope.launch {
             _uiState.value = uiState.value.copy(
                 loading = true,
-                error = null,
-                contacts = null
+                error = null
             )
 
             _loginRepository.refreshToken().fold(
