@@ -2,8 +2,8 @@ package com.ardondev.contactsapp.core.components
 
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -23,7 +23,7 @@ fun CustomTextField(
     supportingText: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
-    OutlinedTextField(
+    TextField(
         value = value,
         onValueChange = onValueChange,
         keyboardOptions = KeyboardOptions(
