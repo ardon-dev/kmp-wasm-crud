@@ -5,6 +5,7 @@ import kotlinx.browser.window
 object Session {
 
     const val KEY_TOKEN = "token"
+    const val KEY_REFRESH_TOKEN = "refresh_token"
     const val KEY_EXPIRES_AT = "expires_at"
 
     fun saveValue(key: String, value: String) {

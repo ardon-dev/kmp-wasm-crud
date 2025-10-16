@@ -83,6 +83,7 @@ class LoginViewModel : ViewModel() {
 
     private fun saveSession(response: LoginResponse) {
         Session.saveValue(Session.KEY_TOKEN, response.accessToken.orEmpty())
+        Session.saveValue(Session.KEY_REFRESH_TOKEN, response.refreshToken.orEmpty())
         Session.saveValue(Session.KEY_EXPIRES_AT, response.expiresAt.toString())
     }
 

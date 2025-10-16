@@ -24,6 +24,11 @@ data class LoginRequest(
 )
 
 @Serializable
+data class RefreshTokenRequest(
+    @SerialName("refresh_token") var refreshToken : String? = null
+)
+
+@Serializable
 data class LoginResponse (
     @SerialName("access_token" ) var accessToken  : String? = null,
     @SerialName("token_type"   ) var tokenType    : String? = null,
