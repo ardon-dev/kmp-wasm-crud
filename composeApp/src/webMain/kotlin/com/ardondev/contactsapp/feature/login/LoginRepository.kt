@@ -4,6 +4,7 @@ import com.ardondev.contactsapp.core.Config
 import com.ardondev.contactsapp.core.KtorClient
 import com.ardondev.contactsapp.core.Session
 import io.ktor.client.call.body
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
@@ -60,6 +61,27 @@ class LoginRepository() {
             Session.saveValue(Session.KEY_TOKEN, data.accessToken.orEmpty())
             Session.saveValue(Session.KEY_REFRESH_TOKEN, data.refreshToken.orEmpty())
             Session.saveValue(Session.KEY_EXPIRES_AT, data.expiresAt.toString())
+
+            return Result.success(Unit)
+        } catch (e: Exception) {
+            return Result.failure(e)
+        }
+    }
+
+    suspend fun logout(): Result<Unit> {
+        try {
+            val accessToken = Session.fetchValue(Session.KEY_TOKEN)
+
+            val response = KtorClient.client.post("${Config.BASE_URL}/auth/v1/logout") {
+                contentType(ContentType.Application.Json)
+                header("apikey", Config.API_KEY)
+                bearerAuth(accessToken.orEmpty())
+            }
+
+            if (response.status.value !in 200..299) {
+                val error: KtorClient.Error = response.body()
+                throw Exception(error.msg)
+            }
 
             return Result.success(Unit)
         } catch (e: Exception) {

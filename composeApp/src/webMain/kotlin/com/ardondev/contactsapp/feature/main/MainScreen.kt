@@ -2,14 +2,18 @@ package com.ardondev.contactsapp.feature.main
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Contacts
+import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -21,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ardondev.contactsapp.core.Session
+import com.ardondev.contactsapp.core.components.CustomAlertDialog
 import com.ardondev.contactsapp.core.components.CustomNavigationRailItem
 import com.ardondev.contactsapp.feature.config.ConfigScreen
 import com.ardondev.contactsapp.feature.config.ConfigScreenRoute
@@ -66,6 +71,17 @@ fun MainScreen(
                 selectedIcon = Icons.Filled.Settings
             )
 
+            Spacer(Modifier.weight(1f))
+
+            OutlinedIconButton(
+                onClick = viewModel::showLogoutDialog
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.PowerSettingsNew,
+                    contentDescription = null
+                )
+            }
+
         }
 
         NavHost(
@@ -89,6 +105,25 @@ fun MainScreen(
 
         }
 
+    }
+
+    if (uiState.showLogoutDialog) {
+        CustomAlertDialog(
+            title = "Logout",
+            text = "Your session will end.",
+            onDismissRequest = viewModel::hideLogoutDialog,
+            onNegativeButtonClick = viewModel::hideLogoutDialog,
+            onPositiveButtonClick = {
+                viewModel.hideLogoutDialog()
+                viewModel.logout()
+            }
+        )
+    }
+
+    LaunchedEffect(uiState.logout) {
+        if (uiState.logout) {
+            closeSession()
+        }
     }
 
     LaunchedEffect(uiState.railItem) {

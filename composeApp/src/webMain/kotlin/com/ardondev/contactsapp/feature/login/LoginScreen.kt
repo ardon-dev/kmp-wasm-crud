@@ -31,15 +31,12 @@ fun LoginScreen(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(MaterialTheme.colorScheme.surface)
     ) {
 
         Card(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 4.dp
-            ),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
             )
         ) {
 

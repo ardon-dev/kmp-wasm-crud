@@ -11,5 +11,7 @@ enum class RailItem(val label: String, val route: Any) {
 }
 
 data class MainUiState(
-    val railItem: RailItem = RailItem.Contacts
+    val railItem: RailItem = RailItem.Contacts,
+    val showLogoutDialog: Boolean = false,
+    val logout: Boolean = false
 )
