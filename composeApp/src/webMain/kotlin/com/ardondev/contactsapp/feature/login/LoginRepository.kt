@@ -36,8 +36,11 @@ class LoginRepository() {
         }
     }
 
-    suspend fun refreshToken(refreshToken: String): Result<Unit> {
+    suspend fun refreshToken(): Result<Unit> {
         try {
+            val refreshToken = Session.fetchValue(Session.KEY_REFRESH_TOKEN)
+                ?: throw Exception("Refresh token not found.")
+
             val request = RefreshTokenRequest(refreshToken)
 
             val response = KtorClient.client.post("${Config.BASE_URL}/auth/v1/token") {

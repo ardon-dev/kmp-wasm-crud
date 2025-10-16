@@ -34,5 +34,7 @@ object KtorClient {
         @SerialName("hint"      ) var hint      : String? = null
     )
 
+    class UnauthorizedException(override val message: String): Throwable()
+
 }
 
