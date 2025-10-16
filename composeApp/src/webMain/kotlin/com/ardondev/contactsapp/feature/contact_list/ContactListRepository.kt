@@ -30,7 +30,13 @@ class ContactListRepository {
 
             if (response.status.value !in 200..299) {
                 val error: KtorClient.Error = response.body()
-                throw Exception(error.msg ?: error.message ?: "")
+                val message = error.msg ?: error.message ?: ""
+
+                if (response.status.value == 401) {
+                    throw KtorClient.UnauthorizedException(message)
+                } else {
+                    throw KtorClient.UnauthorizedException(message)
+                }
             }
 
             val data: List<Contact> = response.body()

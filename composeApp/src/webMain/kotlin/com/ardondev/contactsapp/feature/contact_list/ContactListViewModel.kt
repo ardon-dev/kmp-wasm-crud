@@ -2,6 +2,8 @@ package com.ardondev.contactsapp.feature.contact_list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ardondev.contactsapp.core.KtorClient
+import com.ardondev.contactsapp.feature.login.LoginRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,6 +11,7 @@ import kotlinx.coroutines.launch
 
 class ContactListViewModel: ViewModel() {
 
+    private val _loginRepository = LoginRepository()
     private val _contactListRepository = ContactListRepository()
 
     private val _uiState = MutableStateFlow(ContactListUiState())
@@ -22,12 +25,24 @@ class ContactListViewModel: ViewModel() {
                 contacts = null
             )
 
-            _contactListRepository.getContacts().fold(
-                onSuccess = { data ->
-                    _uiState.value = uiState.value.copy(
-                        loading = false,
-                        error = null,
-                        contacts = data
+            _loginRepository.refreshToken().fold(
+                onSuccess = {
+                    _contactListRepository.getContacts().fold(
+                        onSuccess = { data ->
+                            _uiState.value = uiState.value.copy(
+                                loading = false,
+                                error = null,
+                                contacts = data
+                            )
+                        },
+                        onFailure = { error ->
+                            _uiState.value = uiState.value.copy(
+                                loading = false,
+                                error = error.message,
+                                contacts = null,
+                                unauthorized = error is KtorClient.UnauthorizedException
+                            )
+                        }
                     )
                 },
                 onFailure = { error ->

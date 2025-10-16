@@ -20,7 +20,8 @@ object ContactListScreenRoute
 
 @Composable
 fun ContactListScreen(
-    viewModel: ContactListViewModel = viewModel { ContactListViewModel() }
+    viewModel: ContactListViewModel = viewModel { ContactListViewModel() },
+    onUnauthorized: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
@@ -66,6 +67,7 @@ fun ContactListScreen(
                 onAddClick = {}
             )
         }
+
     }
 
 }

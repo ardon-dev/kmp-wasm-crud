@@ -20,11 +20,13 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ardondev.contactsapp.core.Session
 import com.ardondev.contactsapp.core.components.CustomNavigationRailItem
 import com.ardondev.contactsapp.feature.config.ConfigScreen
 import com.ardondev.contactsapp.feature.config.ConfigScreenRoute
 import com.ardondev.contactsapp.feature.contact_list.ContactListScreen
 import com.ardondev.contactsapp.feature.contact_list.ContactListScreenRoute
+import kotlinx.browser.window
 
 @Composable
 fun MainScreen(
@@ -74,7 +76,11 @@ fun MainScreen(
         ) {
 
             composable<ContactListScreenRoute> {
-                ContactListScreen()
+                ContactListScreen(
+                    onUnauthorized = {
+                        closeSession()
+                    }
+                )
             }
 
             composable<ConfigScreenRoute> {
@@ -95,4 +101,9 @@ fun MainScreen(
         }
     }
 
+}
+
+private fun closeSession() {
+    Session.clear()
+    window.location.reload()
 }

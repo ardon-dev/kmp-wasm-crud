@@ -9,6 +9,7 @@ data class ContactListUiState(
     val loading: Boolean = false,
     val error: String? = null,
     val contacts: List<Contact>? = null,
+    val unauthorized: Boolean = false,
 )
 
 // API
