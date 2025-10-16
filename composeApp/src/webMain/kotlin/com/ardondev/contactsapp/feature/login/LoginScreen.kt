@@ -17,10 +17,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ardondev.contactsapp.core.components.CustomTextField
-import kotlinx.serialization.Serializable
-
-@Serializable
-object LoginRoute
 
 @Composable
 fun LoginScreen(
