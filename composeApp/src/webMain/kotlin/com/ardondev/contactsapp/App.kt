@@ -2,51 +2,27 @@ package com.ardondev.contactsapp
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.ardondev.contactsapp.core.Session
-import com.ardondev.contactsapp.feature.contacts.ContactListScreen
-import com.ardondev.contactsapp.feature.contacts.ContactsRoute
-import com.ardondev.contactsapp.feature.login.LoginRoute
 import com.ardondev.contactsapp.feature.login.LoginScreen
+import com.ardondev.contactsapp.feature.main.MainScreen
+import kotlinx.browser.window
 
 @Composable
-fun App(
-    onNavHostReady: suspend (NavController) -> Unit = {}
-) {
+fun App() {
 
     val isAuthenticated = Session.fetchValue(Session.KEY_TOKEN) != null
     println("Authenticated user: $isAuthenticated")
 
     MaterialTheme {
-
-        val navController = rememberNavController()
-
-        NavHost(
-            navController = navController,
-            startDestination = if (isAuthenticated) ContactsRoute else LoginRoute
-        ) {
-            composable<LoginRoute> {
-                LoginScreen(
-                    onLoginSuccess = {
-                        navController.navigate(
-                            route = ContactsRoute
-                        )
-                    }
-                )
-            }
-            composable<ContactsRoute> {
-                ContactListScreen()
-            }
+        if (isAuthenticated) {
+            MainScreen()
+        } else {
+            LoginScreen(
+                onLoginSuccess = {
+                    window.location.reload()
+                }
+            )
         }
-
-        LaunchedEffect(navController) {
-            onNavHostReady(navController)
-        }
-
     }
 
 }
