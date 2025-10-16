@@ -1,7 +1,7 @@
 package com.ardondev.contactsapp.feature.main
 
 import com.ardondev.contactsapp.feature.config.ConfigScreenRoute
-import com.ardondev.contactsapp.feature.contacts.ContactListScreenRoute
+import com.ardondev.contactsapp.feature.contact_list.ContactListScreenRoute
 
 // UI
 

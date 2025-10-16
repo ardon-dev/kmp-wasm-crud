@@ -1,5 +1,6 @@
 package com.ardondev.contactsapp.feature.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -7,6 +8,7 @@ import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Contacts
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,8 +23,8 @@ import androidx.navigation.compose.rememberNavController
 import com.ardondev.contactsapp.core.components.CustomNavigationRailItem
 import com.ardondev.contactsapp.feature.config.ConfigScreen
 import com.ardondev.contactsapp.feature.config.ConfigScreenRoute
-import com.ardondev.contactsapp.feature.contacts.ContactListScreen
-import com.ardondev.contactsapp.feature.contacts.ContactListScreenRoute
+import com.ardondev.contactsapp.feature.contact_list.ContactListScreen
+import com.ardondev.contactsapp.feature.contact_list.ContactListScreenRoute
 
 @Composable
 fun MainScreen(
@@ -37,7 +39,10 @@ fun MainScreen(
             .fillMaxSize()
     ) {
 
-        NavigationRail {
+        NavigationRail(
+            header = { Box {} },
+            containerColor = MaterialTheme.colorScheme.primary
+        ) {
 
             CustomNavigationRailItem(
                 selected = uiState.railItem == RailItem.Contacts,
