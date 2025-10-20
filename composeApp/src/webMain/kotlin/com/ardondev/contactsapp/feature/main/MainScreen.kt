@@ -31,6 +31,8 @@ import com.ardondev.contactsapp.feature.config.ConfigScreen
 import com.ardondev.contactsapp.feature.config.ConfigScreenRoute
 import com.ardondev.contactsapp.feature.contact_list.ContactListScreen
 import com.ardondev.contactsapp.feature.contact_list.ContactListScreenRoute
+import com.ardondev.contactsapp.feature.new_contact.NewContactScreen
+import com.ardondev.contactsapp.feature.new_contact.NewContactScreenRoute
 import kotlinx.browser.window
 
 @Composable
@@ -95,6 +97,17 @@ fun MainScreen(
                 ContactListScreen(
                     onUnauthorized = {
                         closeSession()
+                    },
+                    onAddClick = {
+                        navController.navigate(NewContactScreenRoute)
+                    }
+                )
+            }
+
+            composable<NewContactScreenRoute> {
+                NewContactScreen(
+                    onNavigateBack = {
+                        navController.navigateUp()
                     }
                 )
             }
@@ -129,7 +142,7 @@ fun MainScreen(
     LaunchedEffect(uiState.railItem) {
         navController.navigate(uiState.railItem.route) {
             popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
+                saveState = false
             }
             launchSingleTop = true
             restoreState = true

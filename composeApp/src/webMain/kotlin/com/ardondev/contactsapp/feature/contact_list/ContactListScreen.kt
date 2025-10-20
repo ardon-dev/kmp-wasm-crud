@@ -1,6 +1,7 @@
 package com.ardondev.contactsapp.feature.contact_list
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,10 +14,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 object ContactListScreenRoute
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactListScreen(
     viewModel: ContactListViewModel = viewModel { ContactListViewModel() },
-    onUnauthorized: () -> Unit
+    onUnauthorized: () -> Unit,
+    onAddClick: () -> Unit
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
@@ -45,7 +48,7 @@ fun ContactListScreen(
             )
         ),
         onRefreshClick = viewModel::getContacts,
-        onAddClick = {},
+        onAddClick = onAddClick,
         modifier = Modifier
             .fillMaxSize()
     )
