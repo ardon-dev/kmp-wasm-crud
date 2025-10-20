@@ -451,11 +451,13 @@ fun DataTableAction(
     modifier: Modifier = Modifier,
     enabled: Boolean = false,
     small: Boolean = false,
+    containerColor: Color = FloatingActionButtonDefaults.containerColor,
     onClick: () -> Unit = {}
 ) {
     if (small) {
         SmallFloatingActionButton(
             onClick = onClick,
+            containerColor = containerColor,
             elevation = FloatingActionButtonDefaults.elevation(
                 defaultElevation = 0.dp,
                 focusedElevation = 0.dp,
