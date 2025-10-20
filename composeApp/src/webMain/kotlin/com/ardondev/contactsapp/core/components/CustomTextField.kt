@@ -1,14 +1,18 @@
 package com.ardondev.contactsapp.core.components
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomTextField(
@@ -23,31 +27,57 @@ fun CustomTextField(
     supportingText: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType
-        ),
-        singleLine = singleLine,
-        label = if (label != null) {
-            { Text(label) }
-        } else null,
-        leadingIcon = if (leadingIcon != null) {
-            {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = null
-                )
-            }
-        } else null,
-        isError = isError,
-        supportingText = if (supportingText != null) {
-            {
-                Text(supportingText)
-            }
-        } else null,
-        visualTransformation = visualTransformation,
-        modifier = modifier
-    )
+    Column {
+
+        label?.let {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                modifier = Modifier
+                    .padding(
+                        start = 4.dp,
+                        bottom = 8.dp
+                    )
+            )
+        }
+
+        OutlinedTextField(
+            value = value,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                errorIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            onValueChange = onValueChange,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType
+            ),
+            singleLine = singleLine,
+            label = null,
+            leadingIcon = if (leadingIcon != null) {
+                {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null
+                    )
+                }
+            } else null,
+            isError = isError,
+            supportingText = if (supportingText != null) {
+                {
+                    Text(supportingText)
+                }
+            } else null,
+            visualTransformation = visualTransformation,
+            modifier = modifier
+                .height(56.dp)
+
+        )
+
+    }
 }
