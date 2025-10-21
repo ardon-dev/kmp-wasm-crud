@@ -1,9 +1,12 @@
 package com.ardondev.contactsapp.core
 
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import kotlinx.browser.document
+import org.jetbrains.skia.Image
 import org.w3c.dom.HTMLInputElement
 import org.w3c.files.File
 import org.w3c.files.get
+import kotlin.io.encoding.Base64
 
 /**
  * Abre el explorador de archivos y llama a la función de callback con el archivo seleccionado.
@@ -11,19 +14,28 @@ import org.w3c.files.get
  * @param accept String de tipos de archivos aceptados.
  */
 fun openFileExplorer(accept: String, onFileSelected: (File?) -> Unit) {
-    // 1. Crear un elemento de input de tipo 'file' en memoria.
+    // Crear un elemento de input de tipo 'file' en memoria
     val input = document.createElement("input") as HTMLInputElement
     input.type = "file"
     input.accept = accept // Define los tipos de archivos aceptados.
 
-    // 2. Establecer el manejador de eventos 'change'.
+    // Establecer el manejador de eventos 'change'
     input.onchange = { event ->
         val fileList = input.files
-        val file = fileList?.get(0) // Obtener el primer archivo seleccionado.
+        // Obtener el primer archivo seleccionado.
+        val file = fileList?.get(0)
         onFileSelected(file)
-        null // El manejador de eventos debe devolver Unit o Nothing?.
+        // El manejador de eventos debe devolver Unit o Nothing?
+        null
     }
 
-    // 3. Simular un clic en el input para abrir el explorador.
+    // Simular un clic en el input para abrir el explorador
     input.click()
 }
+
+fun String.decodeBase64ToByteArray(): ByteArray {
+    val byteArray = encodeToByteArray()
+    return Base64.decode(byteArray, 0, byteArray.size)
+}
+
+fun ByteArray.toImageBitmap() = Image.makeFromEncoded(this).toComposeImageBitmap()
