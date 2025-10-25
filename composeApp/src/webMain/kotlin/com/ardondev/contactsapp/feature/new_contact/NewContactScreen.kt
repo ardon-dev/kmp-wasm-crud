@@ -1,28 +1,22 @@
 package com.ardondev.contactsapp.feature.new_contact
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.UploadFile
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ardondev.contactsapp.core.components.CustomCard
-import com.ardondev.contactsapp.core.components.CustomTextField
+import com.ardondev.contactsapp.core.components.*
 import com.ardondev.contactsapp.core.openFileExplorer
 import kotlinx.serialization.Serializable
+import org.w3c.files.FileReader
 
 @Serializable
 object NewContactScreenRoute
@@ -35,7 +29,6 @@ fun NewContactScreen(
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -43,23 +36,28 @@ fun NewContactScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
-                            contentDescription = null
-                        )
-                    }
-                },
                 title = {
-                    Text("New contact")
+                    Text("New contact", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black))
                 },
                 actions = {
-                    SmallFloatingActionButton({}) {
-                        Row {
-                            Icon(Icons.Default.Done, null)
-                        }
-                    }
+
+                    CustomButton(
+                        text = "Cancel",
+                        outline = true,
+                        leadingIcon = Icons.Outlined.Close,
+                        onClick = viewModel::showCancelDialog
+                    )
+
+                    Spacer(Modifier.width(12.dp))
+
+                    CustomButton(
+                        text = "Save",
+                        leadingIcon = Icons.Outlined.Done,
+                        onClick = viewModel::validate
+                    )
+
+                    Spacer(Modifier.width(12.dp))
+
                 }
             )
         }
@@ -80,6 +78,7 @@ fun NewContactScreen(
                     .fillMaxWidth()
                     .weight(2f)
             ) {
+
                 Column(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.Top,
@@ -87,17 +86,12 @@ fun NewContactScreen(
                         .padding(24.dp)
                 ) {
 
-                    Text(
-                        text = "Fill the contact information below:",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Spacer(Modifier.height(24.dp))
-
                     CustomTextField(
                         label = "Name",
                         value = uiState.name,
                         singleLine = true,
+                        isError = uiState.nameError != null,
+                        supportingText = uiState.nameError,
                         onValueChange = viewModel::updateName,
                         leadingIcon = Icons.Outlined.Person,
                         modifier = Modifier.width(400.dp)
@@ -109,6 +103,8 @@ fun NewContactScreen(
                         label = "Email",
                         value = uiState.email,
                         singleLine = true,
+                        isError = uiState.emailError != null,
+                        supportingText = uiState.emailError,
                         leadingIcon = Icons.Outlined.Email,
                         onValueChange = viewModel::updateEmail,
                         modifier = Modifier.width(400.dp)
@@ -120,6 +116,8 @@ fun NewContactScreen(
                         label = "Phone number",
                         value = uiState.phone,
                         singleLine = true,
+                        isError = uiState.phoneError != null,
+                        supportingText = uiState.phoneError,
                         leadingIcon = Icons.Outlined.Phone,
                         onValueChange = viewModel::updatePhone,
                         modifier = Modifier.width(250.dp)
@@ -144,32 +142,35 @@ fun NewContactScreen(
                         .padding(24.dp)
                 ) {
 
-                    Image(
-                        imageVector = Icons.Filled.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(100.dp)
-                    )
+                    Avatar(uiState.avatar)
 
                     Spacer(Modifier.height(24.dp))
 
+                    // Subir archivo
                     OutlinedButton(
                         onClick = {
-                            openFileExplorer(
-                                accept = "image/*",
-                                onFileSelected = { file ->
-                                    println("File: ${file?.name}")
-                                }
+                            handleSelectedFile(
+                                onSuccess = viewModel::updateAvatar,
+                                onError = viewModel::updateAvatarError
                             )
                         }
                     ) {
+
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Icon(Icons.Default.UploadFile, null)
+
+                            Icon(
+                                imageVector = Icons.Default.UploadFile,
+                                contentDescription = null
+                            )
+
                             Spacer(Modifier.width(16.dp))
+
                             Text("Subir archivo")
                         }
+
                     }
 
                 }
@@ -177,4 +178,53 @@ fun NewContactScreen(
 
         }
     }
+
+    if (uiState.showCancelDialog) {
+        CustomAlertDialog(
+            title = "Cancelar",
+            text = "Se perderá la información ingresada. ¿Deseas cancelar?",
+            onDismissRequest = {
+                viewModel.hideCancelDialog()
+            },
+            onPositiveButtonClick = {
+                viewModel.hideCancelDialog()
+                onNavigateBack()
+            },
+            onNegativeButtonClick = {
+                viewModel.hideCancelDialog()
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalWasmJsInterop::class)
+private fun handleSelectedFile(
+    onSuccess: (base64String: String) -> Unit,
+    onError: (message: String) -> Unit
+) {
+    openFileExplorer(
+        accept = "image/*",
+        onFileSelected = { file ->
+            if (file != null) {
+                if (file.size.toDouble() == 0.0) {
+                    onError("The file is empty.")
+                    return@openFileExplorer
+                }
+
+                val reader = FileReader()
+                reader.onload = {
+                    val result = reader.result
+                    if (result != null) {
+                        onSuccess(result.toString())
+                    } else {
+                        onError("Error to convert file.")
+                    }
+                }
+
+                reader.readAsDataURL(file)
+            } else {
+                print("No file selected.")
+            }
+        }
+    )
 }

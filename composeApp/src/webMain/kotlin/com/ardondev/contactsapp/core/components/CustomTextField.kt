@@ -48,11 +48,13 @@ fun CustomTextField(
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                errorContainerColor = MaterialTheme.colorScheme.surface,
                 errorIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
+            shape = MaterialTheme.shapes.medium,
             onValueChange = onValueChange,
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType
@@ -75,8 +77,6 @@ fun CustomTextField(
             } else null,
             visualTransformation = visualTransformation,
             modifier = modifier
-                .height(56.dp)
-
         )
 
     }
