@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,6 +30,12 @@ fun NewContactScreen(
 ) {
 
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState.contactAdded) {
+        if (uiState.contactAdded) {
+            onNavigateBack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -177,6 +184,21 @@ fun NewContactScreen(
             }
 
         }
+    }
+
+    // TODO: Loading
+
+    if (uiState.error != null) {
+        CustomAlertDialog(
+            title = "Error",
+            text = uiState.error.orEmpty(),
+            onDismissRequest = {
+                viewModel.updateError(null)
+            },
+            onPositiveButtonClick = {
+                viewModel.updateError(null)
+            }
+        )
     }
 
     if (uiState.showCancelDialog) {

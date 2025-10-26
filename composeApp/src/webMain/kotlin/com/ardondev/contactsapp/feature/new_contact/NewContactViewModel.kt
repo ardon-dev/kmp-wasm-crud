@@ -1,11 +1,15 @@
 package com.ardondev.contactsapp.feature.new_contact
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class NewContactViewModel: ViewModel() {
+
+    private val _newContactRepository = NewContactRepository()
 
     private val _uiState = MutableStateFlow(NewContactUiState())
     val uiState: StateFlow<NewContactUiState> = _uiState.asStateFlow()
@@ -50,6 +54,10 @@ class NewContactViewModel: ViewModel() {
         )
     }
 
+    fun updateError(error: String?) {
+        _uiState.value = uiState.value.copy(error = error)
+    }
+
     fun validate() {
         var nameError: String? = null
         var phoneError: String? = null
@@ -72,6 +80,41 @@ class NewContactViewModel: ViewModel() {
             phoneError = phoneError,
             nameError = nameError
         )
+
+        val validForm = nameError == null && phoneError == null && emailError == null
+        if (validForm) addContact()
+    }
+
+    fun addContact() {
+        viewModelScope.launch {
+            _uiState.value = uiState.value.copy(
+                loading = true,
+                error = null,
+                contactAdded = false
+            )
+
+            _newContactRepository.addContact(
+                name = uiState.value.name,
+                phone = uiState.value.phone,
+                email = uiState.value.email,
+                avatar = uiState.value.avatar
+            ).fold(
+                onSuccess = {
+                    _uiState.value = uiState.value.copy(
+                        loading = false,
+                        error = null,
+                        contactAdded = true
+                    )
+                },
+                onFailure = { e ->
+                    _uiState.value = uiState.value.copy(
+                        loading = false,
+                        error = e.message,
+                        contactAdded = false
+                    )
+                }
+            )
+        }
     }
 
 }
