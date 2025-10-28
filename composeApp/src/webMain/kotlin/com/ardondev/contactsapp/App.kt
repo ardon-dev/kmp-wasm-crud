@@ -1,5 +1,6 @@
 package com.ardondev.contactsapp
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import com.ardondev.contactsapp.core.Session
 import com.ardondev.contactsapp.core.theme.AppTheme
@@ -13,7 +14,7 @@ fun App() {
     val isAuthenticated = Session.fetchValue(Session.KEY_TOKEN) != null
     println("Authenticated user: $isAuthenticated")
 
-    AppTheme {
+    MaterialTheme {
         if (isAuthenticated) {
             MainScreen()
         } else {

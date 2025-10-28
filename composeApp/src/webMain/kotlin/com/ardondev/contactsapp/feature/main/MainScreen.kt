@@ -14,11 +14,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -49,8 +51,7 @@ fun MainScreen(
     ) {
 
         NavigationRail(
-            header = { Box {} },
-            containerColor = MaterialTheme.colorScheme.primary
+            header = { Box {} }
         ) {
 
             CustomNavigationRailItem(
@@ -85,6 +86,10 @@ fun MainScreen(
             }
 
         }
+
+        VerticalDivider(
+            thickness = 0.5.dp
+        )
 
         NavHost(
             navController = navController,

@@ -30,8 +30,7 @@ fun CustomButton(
         OutlinedButton(
             onClick = onClick,
             modifier = modifier,
-            enabled = enabled,
-            shape = MaterialTheme.shapes.medium
+            enabled = enabled
         ) {
 
             CustomButtonContent(text, leadingIcon, trailingIcon)
@@ -43,8 +42,7 @@ fun CustomButton(
         Button(
             onClick = onClick,
             modifier = modifier,
-            enabled = enabled,
-            shape = MaterialTheme.shapes.medium
+            enabled = enabled
         ) {
 
             CustomButtonContent(text, leadingIcon, trailingIcon)

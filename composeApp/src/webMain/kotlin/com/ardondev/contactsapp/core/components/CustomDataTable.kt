@@ -1,6 +1,9 @@
 package com.ardondev.contactsapp.core.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -190,100 +193,78 @@ fun <T : RowData> DynamicDataTable(
     val alpha = if (isLoading) 0.5f else 1f
 
     // 1 :: CONTENEDOR
-    Column(
+    Card(
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(
+            width = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant
+        ),
         modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
-
-        // 1.1 :: CABECERA
-        DataTableHeader(
-            isLoading = isLoading,
-            searchText = viewModel.searchText,
-            onSearchTextChange = viewModel::updateSearchText,
-            actions = {
-                onFilterClick?.let {
-                    DataTableAction(
-                        icon = Icons.Filled.FilterList,
-                        enabled = !isLoading,
-                        small = true,
-                        onClick = it,
-                        modifier = Modifier.alpha(alpha)
-                    )
-                }
-                onRefreshClick?.let {
-                    DataTableAction(
-                        icon = Icons.Filled.Sync,
-                        enabled = !isLoading,
-                        small = true,
-                        onClick = it,
-                        modifier = Modifier.alpha(alpha)
-                    )
-                }
-                onAddClick?.let {
-                    DataTableAction(
-                        icon = Icons.Filled.Add,
-                        enabled = !isLoading,
-                        onClick = it,
-                        modifier = Modifier.alpha(alpha)
-                    )
-                }
-            }
-        )
-
-        // 1.2 :: COLUMNAS
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer)
         ) {
-            columnDefs.forEach { col ->
-                Text(
-                    text = col.header,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier
-                        .weight(col.widthWeight)
-                )
-            }
-        }
 
-        // 1.3 :: FILAS
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-                .background(MaterialTheme.colorScheme.surface)
-                .alpha(alpha)
-        ) {
-            // Si se está filtrando por texto y no hay resultados se muestra mensaje
-            if (viewModel.visibleData.value.isEmpty() && viewModel.searchText.isNotBlank()) {
-                item {
+            // 1.2 :: COLUMNAS
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                columnDefs.forEach { col ->
                     Text(
-                        "No hay resultados para la búsqueda '${viewModel.searchText}'",
-                        color = Color.Gray,
-                        textAlign = TextAlign.Center,
+                        text = col.header,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
                         modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxSize()
-                    )
-                }
-            }
-            // Listar los datos como filas
-            else {
-                items(viewModel.visibleData.value) { rowData ->
-                    DataRow(rowData, columnDefs)
-                    HorizontalDivider(
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant
+                            .weight(col.widthWeight)
+                            .padding(16.dp)
                     )
                 }
             }
 
-            // Espacio en blanco para las filas restantes
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            // 1.3 :: FILAS
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                    .alpha(alpha)
+            ) {
+                // Si se está filtrando por texto y no hay resultados se muestra mensaje
+                if (viewModel.visibleData.value.isEmpty() && viewModel.searchText.isNotBlank()) {
+                    item {
+                        Text(
+                            "No hay resultados para la búsqueda '${viewModel.searchText}'",
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxSize()
+                        )
+                    }
+                }
+                // Listar los datos como filas
+                else {
+                    items(viewModel.visibleData.value) { rowData ->
+                        DataRow(rowData, columnDefs)
+                        HorizontalDivider(
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                    }
+                }
+
+                // Espacio en blanco para las filas restantes
 //            val visibleCount = viewModel.visibleData.value.size
 //            val remainingRows = viewModel.pageSize - visibleCount
 //            if (remainingRows > 0) {
@@ -292,95 +273,96 @@ fun <T : RowData> DynamicDataTable(
 //                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 //                }
 //            }
-        }
-
-        if (isLoading) {
-            LinearProgressIndicator(Modifier.fillMaxWidth())
-        }
-
-        // 1.4 :: PAGINACIÓN
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-        ) {
-            val totalItems = viewModel.filteredData.value.size
-            val startItem = ((viewModel.currentPage - 1) * viewModel.pageSize + 1).coerceAtMost(totalItems)
-            val endItem = (startItem + viewModel.visibleData.value.size - 1).coerceAtMost(totalItems)
-
-            // Estado de la paginación
-            if (error != null) {
-                Text(
-                    text = error,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
-            } else if (isLoading) {
-                Text(
-                    text = "Loading...",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
-            } else {
-                Text(
-                    text = if (totalItems > 0) {
-                        "Mostrando $startItem - $endItem de $totalItems resultados."
-                    } else {
-                        "No hay resultados."
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                )
             }
 
-            // Botones de paginación
+            if (isLoading) {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+            }
+
+            // 1.4 :: PAGINACIÓN
             Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                IconButton(
-                    onClick = viewModel::goToPrevPage,
-                    enabled = viewModel.currentPage > 1,
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
-                        contentDescription = null,
+                val totalItems = viewModel.filteredData.value.size
+                val startItem = ((viewModel.currentPage - 1) * viewModel.pageSize + 1).coerceAtMost(totalItems)
+                val endItem = (startItem + viewModel.visibleData.value.size - 1).coerceAtMost(totalItems)
+
+                // Estado de la paginación
+                if (error != null) {
+                    Text(
+                        text = error,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
-                            .size(18.dp)
-                            .rotate(180f)
+                            .padding(horizontal = 16.dp)
+                    )
+                } else if (isLoading) {
+                    Text(
+                        text = "Loading...",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                    )
+                } else {
+                    Text(
+                        text = if (totalItems > 0) {
+                            "Mostrando $startItem - $endItem de $totalItems resultados."
+                        } else {
+                            "No hay resultados."
+                        },
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
                     )
                 }
 
-                Text(
-                    text = "${viewModel.currentPage} / ${viewModel.totalPages.value}",
-                    style = MaterialTheme.typography.labelMedium
-                )
-
-                IconButton(
-                    onClick = viewModel::goToNextPage,
-                    enabled = viewModel.currentPage < viewModel.totalPages.value,
-                    modifier = Modifier.padding(start = 8.dp)
+                // Botones de paginación
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
+                    IconButton(
+                        onClick = viewModel::goToPrevPage,
+                        enabled = viewModel.currentPage > 1,
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .rotate(180f)
+                        )
+                    }
+
+                    Text(
+                        text = "${viewModel.currentPage} / ${viewModel.totalPages.value}",
+                        style = MaterialTheme.typography.labelMedium
                     )
+
+                    IconButton(
+                        onClick = viewModel::goToNextPage,
+                        enabled = viewModel.currentPage < viewModel.totalPages.value,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(18.dp)
+                        )
+                    }
                 }
             }
-        }
 
+        }
     }
 
 }
@@ -505,6 +487,10 @@ private fun <T : RowData> DataRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
+            .hoverable(
+                enabled = true,
+                interactionSource = MutableInteractionSource()
+            )
     ) {
         columnDefs.forEach { col ->
             val cellValue = col.accessor(rowData).toString()
