@@ -17,6 +17,10 @@ class ContactListViewModel: ViewModel() {
     private val _uiState = MutableStateFlow(ContactListUiState())
     val uiState: StateFlow<ContactListUiState> = _uiState.asStateFlow()
 
+    fun updateQuery(value: String) {
+        _uiState.value = uiState.value.copy(query = value)
+    }
+
     fun getContacts() {
         if (uiState.value.loading) return
 

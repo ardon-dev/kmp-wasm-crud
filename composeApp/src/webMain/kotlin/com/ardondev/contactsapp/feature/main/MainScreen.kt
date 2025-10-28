@@ -4,12 +4,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.material.icons.outlined.Contacts
 import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.rounded.AccountBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
@@ -60,24 +64,15 @@ fun MainScreen(
                 onClick = {
                     viewModel.updateRailItem(RailItem.Contacts)
                 },
-                defaultIcon = Icons.Outlined.Contacts,
-                selectedIcon = Icons.Filled.Contacts
-            )
-
-            CustomNavigationRailItem(
-                selected = uiState.railItem == RailItem.Config,
-                label = RailItem.Config.label,
-                onClick = {
-                    viewModel.updateRailItem(RailItem.Config)
-                },
-                defaultIcon = Icons.Outlined.Settings,
-                selectedIcon = Icons.Filled.Settings
+                defaultIcon = Icons.Outlined.AccountBox,
+                selectedIcon = Icons.Rounded.AccountBox
             )
 
             Spacer(Modifier.weight(1f))
 
             OutlinedIconButton(
-                onClick = viewModel::showLogoutDialog
+                onClick = viewModel::showLogoutDialog,
+                shape = MaterialTheme.shapes.large
             ) {
                 Icon(
                     imageVector = Icons.Outlined.PowerSettingsNew,

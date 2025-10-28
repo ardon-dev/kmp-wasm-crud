@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,12 +16,15 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -199,6 +203,9 @@ fun <T : RowData> DynamicDataTable(
             width = 0.5.dp,
             color = MaterialTheme.colorScheme.outlineVariant
         ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
+        ),
         modifier = modifier
     ) {
         Column(
@@ -218,7 +225,7 @@ fun <T : RowData> DynamicDataTable(
                         text = col.header,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Black
                         ),
                         modifier = Modifier
                             .weight(col.widthWeight)
@@ -483,13 +490,21 @@ private fun <T : RowData> DataRow(
     rowData: T,
     columnDefs: List<ColumnDef<T>>
 ) {
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .hoverable(
-                enabled = true,
-                interactionSource = MutableInteractionSource()
+            .hoverable(interactionSource)
+            .stylusHoverIcon(
+                icon = PointerIcon.Hand,
+                overrideDescendants = true
+            )
+            .background(
+                color = if (isHovered) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest
             )
     ) {
         columnDefs.forEach { col ->
