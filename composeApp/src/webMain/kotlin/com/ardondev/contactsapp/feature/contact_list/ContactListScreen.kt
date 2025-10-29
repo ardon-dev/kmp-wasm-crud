@@ -14,6 +14,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -53,79 +55,8 @@ fun ContactListScreen(
 
     Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
 
-        Row(Modifier.padding(24.dp)) {
-
-            Column {
-                Text(
-                    text = "Contacts",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Black
-                    )
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "Manage your contacts",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            CustomButton(
-                outline = true,
-                text = "Refresh",
-                leadingIcon = Icons.Default.Sync,
-                onClick = {},
-                modifier = Modifier
-                    .height(56.dp)
-            )
-
-            Spacer(Modifier.width(12.dp))
-
-            CustomButton(
-                text = "Add contact",
-                leadingIcon = Icons.Default.Add,
-                onClick = {},
-                modifier = Modifier
-                    .height(56.dp)
-            )
-
-        }
-
-        SearchBar(
-            inputField = {
-                SearchBarDefaults.InputField(
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, null)
-                    },
-                    query = uiState.query.toString(),
-                    onQueryChange = viewModel::updateQuery,
-                    onSearch = {
-
-                    },
-                    expanded = false,
-                    onExpandedChange = {},
-                    placeholder = { Text("Search") },
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline,
-                            shape = CircleShape
-                        )
-                )
-            },
-            shape = MaterialTheme.shapes.extraLarge,
-            colors = SearchBarDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-            ),
-            expanded = false,
-            onExpandedChange = { },
-            content = {},
-            modifier = Modifier.padding(start = 24.dp
-            )
-        )
-
         DynamicDataTable(
+            title = "Contacts",
             isLoading = uiState.loading,
             error = uiState.error,
             data = uiState.contacts ?: emptyList(),
@@ -148,11 +79,27 @@ fun ContactListScreen(
                     accessor = { it.email.orEmpty() }
                 )
             ),
-            onRefreshClick = viewModel::getContacts,
-            onAddClick = onAddClick,
+            actions = {
+
+                CustomButton(
+                    outline = true,
+                    text = "Refresh",
+                    leadingIcon = Icons.Rounded.Sync,
+                    onClick = viewModel::getContacts
+                )
+
+                CustomButton(
+                    text = "Add",
+                    leadingIcon = Icons.Rounded.Add,
+                    onClick = {}
+                )
+
+            },
+            onRowClick = { data ->
+                println(data.name)
+            },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
         )
 
     }

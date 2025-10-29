@@ -24,7 +24,7 @@ fun CustomButton(
     outline: Boolean = false,
     enabled: Boolean = true,
     leadingIcon: ImageVector? = null,
-    trailingIcon: ImageVector? = null,
+    trailingIcon: ImageVector? = null
 ) {
     if (outline) {
 
@@ -32,9 +32,13 @@ fun CustomButton(
             onClick = onClick,
             modifier = modifier,
             enabled = enabled,
+            border = _root_ide_package_.androidx.compose.foundation.BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.primary
+            ),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = MaterialTheme.colorScheme.primary,
             )
         ) {
 

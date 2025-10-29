@@ -2,18 +2,29 @@ package com.ardondev.contactsapp.core.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.onClick
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.FilterAlt
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -24,6 +35,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -176,17 +188,20 @@ class DataTableViewModel<T : RowData>(
  * @param columnDefs Listado de [ColumnDef].
  * @param modifier Modificador para el componente.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T : RowData> DynamicDataTable(
     data: List<T>,
     columnDefs: List<ColumnDef<T>>,
     modifier: Modifier = Modifier,
-    onFilterClick: (() -> Unit)? = null,
-    onRefreshClick: (() -> Unit)? = null,
-    onAddClick: (() -> Unit)? = null,
     isLoading: Boolean = false,
-    error: String? = null
+    error: String? = null,
+    title: String = "",
+    actions: @Composable (RowScope.() -> Unit) = {},
+    onRowClick: (T) -> Unit
 ) {
+    val scrollState = rememberScrollState()
+
     // Inicializar ViewModel
     val viewModel = remember { DataTableViewModel(data, columnDefs) }
 
@@ -196,103 +211,182 @@ fun <T : RowData> DynamicDataTable(
 
     val alpha = if (isLoading) 0.5f else 1f
 
-    // 1 :: CONTENEDOR
-    Card(
-        shape = MaterialTheme.shapes.large,
-        border = BorderStroke(
-            width = 0.5.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        ),
+    Column(
         modifier = modifier
+            .verticalScroll(scrollState)
+            .padding(24.dp)
     ) {
-        Column(
+
+        // 1 :: HEADER
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primaryContainer)
         ) {
 
-            // 1.2 :: COLUMNAS
-            Row(
+            // 1.1 :: Título
+
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Black
+                )
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            // 1.2 :: Actions
+            actions()
+
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // 1.3 :: Search
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+
+            SearchBarDefaults.InputField(
+                query = viewModel.searchText,
+                onQueryChange = viewModel::updateSearchText,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Search,
+                        contentDescription = null
+                    )
+                },
+                placeholder = {
+                    Text("Search...")
+                },
+                onSearch = {
+
+                },
+                expanded = false,
+                onExpandedChange = {
+
+                },
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = CircleShape
+                    )
+            )
+
+            Spacer(Modifier.width(16.dp))
+
+            CustomButton(
+                outline = true,
+                leadingIcon = Icons.Outlined.FilterAlt,
+                text = "Filters",
+                onClick = {}
+            )
+
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // 1 :: CONTENEDOR
+        Card(
+            shape = MaterialTheme.shapes.large,
+            border = BorderStroke(
+                width = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 1.dp
+            )
+        ) {
+
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.primaryContainer)
             ) {
-                columnDefs.forEach { col ->
-                    Text(
-                        text = col.header,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Black
-                        ),
-                        modifier = Modifier
-                            .weight(col.widthWeight)
-                            .padding(16.dp)
-                    )
-                }
-            }
 
-            HorizontalDivider(
-                thickness = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-
-            // 1.3 :: FILAS
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f)
-                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                    .alpha(alpha)
-            ) {
-                // Si se está filtrando por texto y no hay resultados se muestra mensaje
-                if (viewModel.visibleData.value.isEmpty() && viewModel.searchText.isNotBlank()) {
-                    item {
+                // 1.2 :: COLUMNAS
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    columnDefs.forEach { col ->
                         Text(
-                            "No hay resultados para la búsqueda '${viewModel.searchText}'",
-                            color = Color.Gray,
-                            textAlign = TextAlign.Center,
+                            text = col.header,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.Black
+                            ),
                             modifier = Modifier
-                                .padding(8.dp)
-                                .fillMaxSize()
+                                .weight(col.widthWeight)
+                                .padding(16.dp)
                         )
                     }
                 }
-                // Listar los datos como filas
-                else {
-                    items(viewModel.visibleData.value) { rowData ->
-                        DataRow(rowData, columnDefs)
+
+                HorizontalDivider(
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
+                // 1.3 :: FILAS
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                        .alpha(alpha)
+                ) {
+                    viewModel.visibleData.value.forEach { rowData ->
+                        DataRow(
+                            rowData = rowData,
+                            columnDefs = columnDefs,
+                            enabled = !isLoading,
+                            onClick = { onRowClick(rowData) }
+                        )
                         HorizontalDivider(
                             thickness = 0.5.dp,
                             color = MaterialTheme.colorScheme.outlineVariant
                         )
                     }
+
+                    val visibleCount = viewModel.visibleData.value.size
+                    val remainingRows = viewModel.pageSize - visibleCount
+                    if (remainingRows > 0) {
+                        repeat(remainingRows) {
+                            Text("", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
+                            HorizontalDivider(
+                                thickness = 0.5.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                        }
+                    }
+
                 }
 
-                // Espacio en blanco para las filas restantes
-//            val visibleCount = viewModel.visibleData.value.size
-//            val remainingRows = viewModel.pageSize - visibleCount
-//            if (remainingRows > 0) {
-//                items(remainingRows) {
-//                    Spacer(Modifier.height(40.dp))
-//                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-//                }
-//            }
             }
 
-            if (isLoading) {
-                LinearProgressIndicator(Modifier.fillMaxWidth())
-            }
+        }
+
+        // 2:: PAGINACIÓN
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
 
             // 1.4 :: PAGINACIÓN
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 val totalItems = viewModel.filteredData.value.size
                 val startItem = ((viewModel.currentPage - 1) * viewModel.pageSize + 1).coerceAtMost(totalItems)
@@ -304,17 +398,23 @@ fun <T : RowData> DynamicDataTable(
                         text = error,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
                     )
                 } else if (isLoading) {
-                    Text(
-                        text = "Loading...",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        CircularProgressIndicator(Modifier.size(18.dp))
+
+                        Spacer(Modifier.width(16.dp))
+
+                        Text(
+                            text = "Loading data...",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+
+                    }
                 } else {
                     Text(
                         text = if (totalItems > 0) {
@@ -324,159 +424,49 @@ fun <T : RowData> DynamicDataTable(
                         },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
                     )
                 }
 
-                // Botones de paginación
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            IconButton(
+                onClick = viewModel::goToPrevPage,
+                enabled = viewModel.currentPage > 1 && !isLoading,
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
+                    contentDescription = null,
                     modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                ) {
-                    IconButton(
-                        onClick = viewModel::goToPrevPage,
-                        enabled = viewModel.currentPage > 1,
-                        modifier = Modifier.padding(end = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(18.dp)
-                                .rotate(180f)
-                        )
-                    }
+                        .size(18.dp)
+                        .rotate(180f)
+                )
+            }
 
-                    Text(
-                        text = "${viewModel.currentPage} / ${viewModel.totalPages.value}",
-                        style = MaterialTheme.typography.labelMedium
-                    )
+            Text(
+                text = "${viewModel.currentPage} / ${viewModel.totalPages.value}",
+                style = MaterialTheme.typography.labelMedium
+            )
 
-                    IconButton(
-                        onClick = viewModel::goToNextPage,
-                        enabled = viewModel.currentPage < viewModel.totalPages.value,
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(18.dp)
-                        )
-                    }
-                }
+            IconButton(
+                onClick = viewModel::goToNextPage,
+                enabled = viewModel.currentPage < viewModel.totalPages.value && !isLoading,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(18.dp)
+                )
             }
 
         }
-    }
-
-}
-
-/**
- * Componente cabecera para la tabla de datos.
- *
- * @param searchText Valor a de búsqueda actual.
- * @param onSearchTextChange Callback que recupera el nuevo valor de búsqueda.
- * @param actions Fila de componentes diseñada para [DataTableAction].
- */
-@Composable
-fun DataTableHeader(
-    searchText: String,
-    onSearchTextChange: (String) -> Unit,
-    actions: @Composable (RowScope.() -> Unit),
-    isLoading: Boolean = false,
-) {
-
-    Row(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
-
-        // Entrada de texto de búsqueda
-        TextField(
-            enabled = !isLoading,
-            value = searchText,
-            onValueChange = onSearchTextChange,
-            singleLine = true,
-            shape = MaterialTheme.shapes.medium,
-            placeholder = { Text("Buscar...", style = MaterialTheme.typography.bodyMedium) },
-            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = "Buscar") },
-            textStyle = MaterialTheme.typography.bodyMedium,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                errorIndicatorColor = Color.Transparent,
-                focusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            )
-        )
-
-        // Espacio vacío
-        Spacer(Modifier.weight(1f))
-
-        // Lista de acciones
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            content = actions
-        )
 
     }
-}
 
-/**
- * Componente botón para representar una acción en la tabla de datos.
- *
- * @param icon Ícono como un [ImageVector].
- * @param small Determina si el botón debe ser pequeño.
- * @param onClick Callback para manejar el evento click.
- */
-@Composable
-fun DataTableAction(
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = false,
-    small: Boolean = false,
-    containerColor: Color = FloatingActionButtonDefaults.containerColor,
-    onClick: () -> Unit = {}
-) {
-    if (small) {
-        SmallFloatingActionButton(
-            onClick = onClick,
-            containerColor = containerColor,
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                focusedElevation = 0.dp,
-                hoveredElevation = if (enabled) 4.dp else 0.dp,
-                pressedElevation = if (enabled) 12.dp else 0.dp
-            ),
-            modifier = modifier
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null
-            )
-        }
-    } else {
-        FloatingActionButton(
-            onClick = onClick,
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                focusedElevation = 0.dp,
-                pressedElevation = if (enabled) 12.dp else 0.dp
-            ),
-
-            modifier = modifier
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null
-            )
-        }
-    }
 }
 
 /**
@@ -488,7 +478,9 @@ fun DataTableAction(
 @Composable
 private fun <T : RowData> DataRow(
     rowData: T,
-    columnDefs: List<ColumnDef<T>>
+    columnDefs: List<ColumnDef<T>>,
+    enabled: Boolean = true,
+    onClick: (T) -> Unit
 ) {
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -499,12 +491,16 @@ private fun <T : RowData> DataRow(
         modifier = Modifier
             .fillMaxWidth()
             .hoverable(interactionSource)
-            .stylusHoverIcon(
+            .pointerHoverIcon(
                 icon = PointerIcon.Hand,
                 overrideDescendants = true
             )
             .background(
-                color = if (isHovered) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surfaceContainerLowest
+                color = if (isHovered && enabled) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerLowest
+            )
+            .clickable(
+                enabled = enabled,
+                onClick = { onClick(rowData) }
             )
     ) {
         columnDefs.forEach { col ->
