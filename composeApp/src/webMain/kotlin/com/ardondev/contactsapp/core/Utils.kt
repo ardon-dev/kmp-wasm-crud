@@ -1,6 +1,14 @@
 package com.ardondev.contactsapp.core
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import kotlinx.browser.document
 import org.jetbrains.skia.Image
 import org.w3c.dom.HTMLInputElement
@@ -39,3 +47,28 @@ fun String.decodeBase64ToByteArray(): ByteArray {
 }
 
 fun ByteArray.toImageBitmap() = Image.makeFromEncoded(this).toComposeImageBitmap()
+
+/**
+ * Dibuja una barra de desplazamiento vertical customizada en el Composable al que se aplica.
+ *
+ * @param state El [ScrollState] asociado al contenido scrollable.
+ * @param width El ancho de la barra de desplazamiento. Por defecto es 4.dp.
+ * @param color El color utilizado para dibujar la barra.
+ * @return [Modifier] que añade el dibujo de la barra de desplazamiento.
+ */
+fun Modifier.simpleVerticalScrollbar(
+    state: ScrollState,
+    width: Dp = 4.dp,
+    color: Color = Color.DarkGray
+): Modifier = drawBehind {
+    val contentHeight = state.maxValue + size.height
+    val scrollbarHeight = size.height * (size.height / contentHeight)
+    val scrollbarOffset = state.value * (size.height / contentHeight)
+
+    drawRect(
+        color = color,
+        topLeft = Offset(size.width - width.toPx(), scrollbarOffset),
+        size = Size(width.toPx(), scrollbarHeight),
+        alpha = 0.5f
+    )
+}
