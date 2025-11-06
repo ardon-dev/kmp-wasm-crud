@@ -1,5 +1,7 @@
 package com.ardondev.contactsapp.feature.contact_list
 
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -30,14 +32,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ardondev.contactsapp.core.components.ColumnDef
 import com.ardondev.contactsapp.core.components.CustomButton
 import com.ardondev.contactsapp.core.components.DynamicDataTable
+import com.ardondev.contactsapp.feature.new_contact.NewContactDialog
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -47,6 +52,7 @@ object ContactListScreenRoute
 @Composable
 fun ContactListScreen(
     viewModel: ContactListViewModel = viewModel { ContactListViewModel() },
+    onShowModal: (Boolean) -> Unit,
     onUnauthorized: () -> Unit,
     onAddClick: () -> Unit
 ) {
@@ -81,17 +87,32 @@ fun ContactListScreen(
             ),
             actions = {
 
+                val rotation = rememberInfiniteTransition().animateFloat(
+                    initialValue = 360f,
+                    targetValue = 0f,
+                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                        animation = androidx.compose.animation.core.tween(
+                            durationMillis = 1000,
+                            easing = androidx.compose.animation.core.LinearEasing
+                        ),
+                        repeatMode = androidx.compose.animation.core.RepeatMode.Restart
+                    )
+                )
+
                 CustomButton(
                     outline = true,
+                    enabled = !uiState.loading,
                     text = "Refresh",
                     leadingIcon = Icons.Rounded.Sync,
+                    leadingIconRotation = if (uiState.loading) rotation.value else 0f,
                     onClick = viewModel::getContacts
                 )
 
                 CustomButton(
                     text = "Add",
+                    enabled = !uiState.loading,
                     leadingIcon = Icons.Rounded.Add,
-                    onClick = {}
+                    onClick = viewModel::showAddDialog
                 )
 
             },
@@ -102,6 +123,16 @@ fun ContactListScreen(
                 .fillMaxSize()
         )
 
+    }
+
+    if (uiState.showAddDialog) {
+        onShowModal(true)
+        NewContactDialog(
+            onDismissRequest = {
+                viewModel.hideAddDialog()
+                onShowModal(false)
+            }
+        )
     }
 
 }

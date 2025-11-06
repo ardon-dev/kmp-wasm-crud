@@ -58,17 +58,39 @@ fun ByteArray.toImageBitmap() = Image.makeFromEncoded(this).toComposeImageBitmap
  */
 fun Modifier.simpleVerticalScrollbar(
     state: ScrollState,
-    width: Dp = 4.dp,
+    width: Dp = 8.dp,
     color: Color = Color.DarkGray
 ): Modifier = drawBehind {
     val contentHeight = state.maxValue + size.height
-    val scrollbarHeight = size.height * (size.height / contentHeight)
-    val scrollbarOffset = state.value * (size.height / contentHeight)
+    if (contentHeight <= 0f) return@drawBehind
 
-    drawRect(
+    val trackWidth = width.toPx()
+    val trackLeft = size.width - trackWidth
+    val trackSize = Size(trackWidth, size.height)
+
+    // Dibujar fondo (pista) con esquinas redondeadas
+    drawRoundRect(
+        color = color.copy(alpha = 0.12f),
+        topLeft = Offset(trackLeft, 0f),
+        size = trackSize,
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(trackWidth / 2f, trackWidth / 2f),
+        alpha = 1f
+    )
+
+    // Calcular tamaño y offset del pulgar (thumb)
+    val rawThumbHeight = size.height * (size.height / contentHeight)
+    val minThumbHeight = 24.dp.toPx()
+    val thumbHeight = kotlin.math.max(rawThumbHeight, minThumbHeight)
+
+    val rawThumbOffset = state.value * (size.height / contentHeight)
+    val thumbOffset = rawThumbOffset.coerceIn(0f, size.height - thumbHeight)
+
+    // Dibujar pulgar con esquinas redondeadas
+    drawRoundRect(
         color = color,
-        topLeft = Offset(size.width - width.toPx(), scrollbarOffset),
-        size = Size(width.toPx(), scrollbarHeight),
-        alpha = 0.5f
+        topLeft = Offset(trackLeft, thumbOffset),
+        size = Size(trackWidth, thumbHeight),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(trackWidth / 2f, trackWidth / 2f),
+        alpha = 0.9f
     )
 }

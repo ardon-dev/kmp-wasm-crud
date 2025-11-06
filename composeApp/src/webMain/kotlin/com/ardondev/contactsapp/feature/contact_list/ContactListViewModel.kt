@@ -21,6 +21,14 @@ class ContactListViewModel: ViewModel() {
         _uiState.value = uiState.value.copy(query = value)
     }
 
+    fun showAddDialog() {
+        _uiState.value = uiState.value.copy(showAddDialog = true)
+    }
+
+    fun hideAddDialog() {
+        _uiState.value = uiState.value.copy(showAddDialog = false)
+    }
+
     fun getContacts() {
         if (uiState.value.loading) return
 

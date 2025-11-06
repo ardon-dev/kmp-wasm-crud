@@ -1,6 +1,9 @@
 package com.ardondev.contactsapp.core.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalScrollbarStyle
+import androidx.compose.foundation.ScrollbarAdapter
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +26,7 @@ import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.FilterAlt
+import androidx.compose.material.icons.rounded.FilterList
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.material3.*
@@ -39,7 +43,9 @@ import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.stylusHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ardondev.contactsapp.core.simpleVerticalScrollbar
 import kotlin.math.ceil
 
 /**
@@ -211,132 +217,108 @@ fun <T : RowData> DynamicDataTable(
 
     val alpha = if (isLoading) 0.5f else 1f
 
-    Column(
-        modifier = modifier
-            .verticalScroll(scrollState)
-            .padding(24.dp)
-    ) {
+    Row {
 
-        // 1 :: HEADER
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
+        Column(
+            modifier = modifier
+                .weight(1f)
+                .verticalScroll(scrollState)
+                .padding(24.dp)
         ) {
 
-            // 1.1 :: Título
+            // 1 :: HEADER
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.Black
-                )
-            )
-
-            Spacer(Modifier.weight(1f))
-
-            // 1.2 :: Actions
-            actions()
-
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        // 1.3 :: Search
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
-        ) {
-
-            SearchBarDefaults.InputField(
-                query = viewModel.searchText,
-                onQueryChange = viewModel::updateSearchText,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Rounded.Search,
-                        contentDescription = null
-                    )
-                },
-                placeholder = {
-                    Text("Search...")
-                },
-                onSearch = {
-
-                },
-                expanded = false,
-                onExpandedChange = {
-
-                },
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                        shape = CircleShape
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = CircleShape
-                    )
-            )
-
-            Spacer(Modifier.width(16.dp))
-
-            CustomButton(
-                outline = true,
-                leadingIcon = Icons.Outlined.FilterAlt,
-                text = "Filters",
-                onClick = {}
-            )
-
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // 1 :: CONTENEDOR
-        Card(
-            shape = MaterialTheme.shapes.large,
-            border = BorderStroke(
-                width = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 1.dp
-            )
-        ) {
-
-            Column(
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primaryContainer)
             ) {
 
-                // 1.2 :: COLUMNAS
-                Row(
+                // 1.1 :: Título
+
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Black
+                    )
+                )
+
+                Spacer(Modifier.weight(1f))
+
+                // 1.2 :: Actions
+                actions()
+
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // 1.3 :: Search
+
+            Row {
+
+                CustomSearchBar(
+                    query = viewModel.searchText,
+                    onQueryChange = viewModel::updateSearchText
+                )
+
+                Spacer(Modifier.width(16.dp))
+
+                CustomButton(
+                    outline = true,
+                    text = "Filters",
+                    leadingIcon = Icons.Rounded.FilterList,
+                    onClick = {}
+                )
+
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // 1 :: CONTENEDOR
+            Card(
+                shape = MaterialTheme.shapes.large,
+                border = BorderStroke(
+                    width = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 1.dp
+                )
+            ) {
+
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primaryContainer)
                 ) {
-                    columnDefs.forEach { col ->
-                        Text(
-                            text = col.header,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.Black
-                            ),
-                            modifier = Modifier
-                                .weight(col.widthWeight)
-                                .padding(16.dp)
-                        )
-                    }
-                }
 
-                HorizontalDivider(
-                    thickness = 0.5.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+                    // 1.2 :: COLUMNAS
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primaryContainer)
+                    ) {
+                        columnDefs.forEach { col ->
+                            Text(
+                                text = col.header,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Black
+                                ),
+                                modifier = Modifier
+                                    .weight(col.widthWeight)
+                                    .padding(16.dp)
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
 
                 // 1.3 :: FILAS
                 Column(
@@ -358,112 +340,119 @@ fun <T : RowData> DynamicDataTable(
                         )
                     }
 
-                    val visibleCount = viewModel.visibleData.value.size
-                    val remainingRows = viewModel.pageSize - visibleCount
-                    if (remainingRows > 0) {
-                        repeat(remainingRows) {
-                            Text("", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(16.dp))
-                            HorizontalDivider(
-                                thickness = 0.5.dp,
-                                color = MaterialTheme.colorScheme.outlineVariant
-                            )
+                        val visibleCount = viewModel.visibleData.value.size
+                        val remainingRows = viewModel.pageSize - visibleCount
+                        if (remainingRows > 0) {
+                            repeat(remainingRows) {
+                                Text("", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(16.dp))
+                                HorizontalDivider(
+                                    thickness = 0.5.dp,
+                                    color = MaterialTheme.colorScheme.outlineVariant
+                                )
+                            }
                         }
+
                     }
 
                 }
 
             }
 
-        }
-
-        // 2:: PAGINACIÓN
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
-
-            // 1.4 :: PAGINACIÓN
+            // 2:: PAGINACIÓN
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(16.dp)
             ) {
-                val totalItems = viewModel.filteredData.value.size
-                val startItem = ((viewModel.currentPage - 1) * viewModel.pageSize + 1).coerceAtMost(totalItems)
-                val endItem = (startItem + viewModel.visibleData.value.size - 1).coerceAtMost(totalItems)
 
-                // Estado de la paginación
-                if (error != null) {
-                    Text(
-                        text = error,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                } else if (isLoading) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                // 1.4 :: PAGINACIÓN
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val totalItems = viewModel.filteredData.value.size
+                    val startItem = ((viewModel.currentPage - 1) * viewModel.pageSize + 1).coerceAtMost(totalItems)
+                    val endItem = (startItem + viewModel.visibleData.value.size - 1).coerceAtMost(totalItems)
 
-                        CircularProgressIndicator(Modifier.size(18.dp))
-
-                        Spacer(Modifier.width(16.dp))
-
+                    // Estado de la paginación
+                    if (error != null) {
                         Text(
-                            text = "Loading data...",
+                            text = error,
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
+                    } else if (isLoading) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
 
+                            CircularProgressIndicator(Modifier.size(18.dp))
+
+                            Spacer(Modifier.width(16.dp))
+
+                            Text(
+                                text = "Loading data...",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+
+                        }
+                    } else {
+                        Text(
+                            text = if (totalItems > 0) {
+                                "Mostrando $startItem - $endItem de $totalItems resultados."
+                            } else {
+                                "No hay resultados."
+                            },
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
-                } else {
-                    Text(
-                        text = if (totalItems > 0) {
-                            "Mostrando $startItem - $endItem de $totalItems resultados."
-                        } else {
-                            "No hay resultados."
-                        },
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                IconButton(
+                    onClick = viewModel::goToPrevPage,
+                    enabled = viewModel.currentPage > 1 && !isLoading,
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .rotate(180f)
+                    )
+                }
+
+                Text(
+                    text = "${viewModel.currentPage} / ${viewModel.totalPages.value}",
+                    style = MaterialTheme.typography.labelMedium
+                )
+
+                IconButton(
+                    onClick = viewModel::goToNextPage,
+                    enabled = viewModel.currentPage < viewModel.totalPages.value && !isLoading,
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
                     )
                 }
 
             }
 
-            Spacer(Modifier.weight(1f))
-
-            IconButton(
-                onClick = viewModel::goToPrevPage,
-                enabled = viewModel.currentPage > 1 && !isLoading,
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .rotate(180f)
-                )
-            }
-
-            Text(
-                text = "${viewModel.currentPage} / ${viewModel.totalPages.value}",
-                style = MaterialTheme.typography.labelMedium
-            )
-
-            IconButton(
-                onClick = viewModel::goToNextPage,
-                enabled = viewModel.currentPage < viewModel.totalPages.value && !isLoading,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.ArrowForwardIos,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                )
-            }
-
         }
+
+        VerticalScrollbar(
+            adapter = ScrollbarAdapter(scrollState),
+            modifier = Modifier.fillMaxHeight()
+        )
 
     }
 
@@ -496,7 +485,10 @@ private fun <T : RowData> DataRow(
                 overrideDescendants = true
             )
             .background(
-                color = if (isHovered && enabled) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerLowest
+                color = if (isHovered && enabled)
+                    MaterialTheme.colorScheme.surface
+                else
+                    MaterialTheme.colorScheme.surfaceContainerLowest
             )
             .clickable(
                 enabled = enabled,
@@ -507,7 +499,9 @@ private fun <T : RowData> DataRow(
             val cellValue = col.accessor(rowData).toString()
             Text(
                 text = cellValue,
-                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .weight(col.widthWeight)
                     .padding(16.dp)

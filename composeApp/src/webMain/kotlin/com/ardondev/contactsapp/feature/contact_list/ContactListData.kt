@@ -10,7 +10,8 @@ data class ContactListUiState(
     val error: String? = null,
     val contacts: List<Contact>? = null,
     val unauthorized: Boolean = false,
-    val query: String = ""
+    val query: String = "",
+    val showAddDialog: Boolean = false
 )
 
 // API

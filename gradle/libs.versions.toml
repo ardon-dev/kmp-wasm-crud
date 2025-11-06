@@ -17,6 +17,7 @@ androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle
 jetbrains-compose-material-icons = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIcons"}
 jetbrains-compose-web-core = { module = "org.jetbrains.compose.web:web-core", version.ref = "composeMultiplatform" }
 jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+jetbrains-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 
 #Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }

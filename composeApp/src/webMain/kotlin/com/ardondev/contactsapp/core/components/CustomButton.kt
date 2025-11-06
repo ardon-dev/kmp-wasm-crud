@@ -1,5 +1,9 @@
 package com.ardondev.contactsapp.core.components
 
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -10,27 +14,37 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import org.jetbrains.skia.FontWeight
 
 @Composable
 fun CustomButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier.defaultMinSize(
-        minWidth = 120.dp
+        minWidth = 120.dp,
+        minHeight = 48.dp
     ),
     outline: Boolean = false,
     enabled: Boolean = true,
     leadingIcon: ImageVector? = null,
+    leadingIconRotation: Float = 0f,
     trailingIcon: ImageVector? = null
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
     if (outline) {
 
         OutlinedButton(
             onClick = onClick,
-            modifier = modifier,
             enabled = enabled,
             border = _root_ide_package_.androidx.compose.foundation.BorderStroke(
                 width = 1.dp,
@@ -39,10 +53,21 @@ fun CustomButton(
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                 contentColor = MaterialTheme.colorScheme.primary,
-            )
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                disabledContentColor = MaterialTheme.colorScheme.primary
+            ),
+            modifier = modifier
+                .hoverable(
+                    enabled = enabled,
+                    interactionSource = interactionSource
+                )
+                .pointerHoverIcon(
+                    icon = if (enabled) PointerIcon.Hand else PointerIcon.Default,
+                    overrideDescendants = true
+                )
         ) {
 
-            CustomButtonContent(text, leadingIcon, trailingIcon)
+            CustomButtonContent(text, leadingIcon, leadingIconRotation, trailingIcon)
 
         }
 
@@ -50,11 +75,23 @@ fun CustomButton(
 
         Button(
             onClick = onClick,
-            modifier = modifier,
-            enabled = enabled
+            modifier = modifier
+                .hoverable(
+                    enabled = enabled,
+                    interactionSource = interactionSource
+                )
+                .pointerHoverIcon(
+                    icon = if (enabled) PointerIcon.Hand else PointerIcon.Default,
+                    overrideDescendants = true
+                ),
+            enabled = enabled,
+            colors = ButtonDefaults.buttonColors(
+                disabledContainerColor = ButtonDefaults.buttonColors().containerColor,
+                disabledContentColor = ButtonDefaults.buttonColors().contentColor
+            ),
         ) {
 
-            CustomButtonContent(text, leadingIcon, trailingIcon)
+            CustomButtonContent(text, leadingIcon, leadingIconRotation, trailingIcon)
 
         }
 
@@ -66,6 +103,7 @@ fun CustomButton(
 private fun CustomButtonContent(
     text: String,
     leadingIcon: ImageVector? = null,
+    leadingIconRotation: Float = 0f,
     trailingIcon: ImageVector? = null
 ) {
     leadingIcon?.let {
@@ -75,10 +113,16 @@ private fun CustomButtonContent(
             modifier = Modifier
                 .padding(end = 12.dp)
                 .size(18.dp)
+                .rotate(leadingIconRotation)
         )
     }
 
-    Text(text)
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall.copy(
+            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+        )
+    )
 
     trailingIcon?.let {
         Icon(

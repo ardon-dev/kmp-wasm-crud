@@ -27,6 +27,10 @@ class MainViewModel: ViewModel() {
         _uiState.value = uiState.value.copy(showLogoutDialog = false)
     }
 
+    fun blur(blur: Boolean) {
+        _uiState.value = uiState.value.copy(blur = blur)
+    }
+
     fun logout() {
         viewModelScope.launch {
             _loginRepository.logout().fold(
