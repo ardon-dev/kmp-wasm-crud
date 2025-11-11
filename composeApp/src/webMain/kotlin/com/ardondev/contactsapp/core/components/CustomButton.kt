@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -34,6 +35,7 @@ fun CustomButton(
     ),
     outline: Boolean = false,
     enabled: Boolean = true,
+    loading: Boolean = false,
     leadingIcon: ImageVector? = null,
     leadingIconRotation: Float = 0f,
     trailingIcon: ImageVector? = null
@@ -45,7 +47,7 @@ fun CustomButton(
 
         OutlinedButton(
             onClick = onClick,
-            enabled = enabled,
+            enabled = enabled and !loading,
             border = _root_ide_package_.androidx.compose.foundation.BorderStroke(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.primary
@@ -58,16 +60,23 @@ fun CustomButton(
             ),
             modifier = modifier
                 .hoverable(
-                    enabled = enabled,
+                    enabled = enabled and !loading,
                     interactionSource = interactionSource
                 )
                 .pointerHoverIcon(
-                    icon = if (enabled) PointerIcon.Hand else PointerIcon.Default,
+                    icon = if (enabled and !loading) PointerIcon.Hand else PointerIcon.Default,
                     overrideDescendants = true
                 )
         ) {
 
-            CustomButtonContent(text, leadingIcon, leadingIconRotation, trailingIcon)
+            if (loading) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+            } else {
+                CustomButtonContent(text, leadingIcon, leadingIconRotation, trailingIcon)
+            }
 
         }
 
@@ -77,21 +86,28 @@ fun CustomButton(
             onClick = onClick,
             modifier = modifier
                 .hoverable(
-                    enabled = enabled,
+                    enabled = enabled and !loading,
                     interactionSource = interactionSource
                 )
                 .pointerHoverIcon(
-                    icon = if (enabled) PointerIcon.Hand else PointerIcon.Default,
+                    icon = if (enabled and !loading) PointerIcon.Hand else PointerIcon.Default,
                     overrideDescendants = true
                 ),
-            enabled = enabled,
+            enabled = enabled and !loading,
             colors = ButtonDefaults.buttonColors(
                 disabledContainerColor = ButtonDefaults.buttonColors().containerColor,
                 disabledContentColor = ButtonDefaults.buttonColors().contentColor
             ),
         ) {
 
-            CustomButtonContent(text, leadingIcon, leadingIconRotation, trailingIcon)
+            if (loading) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(18.dp)
+                )
+            } else {
+                CustomButtonContent(text, leadingIcon, leadingIconRotation, trailingIcon)
+            }
 
         }
 
